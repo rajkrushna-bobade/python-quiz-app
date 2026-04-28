@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Python Quiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #21262d;
+      --border: #30363d;
+      --accent: #3fb950;
+      --accent2: #f78166;
+      --accent3: #79c0ff;
+      --text: #e6edf3;
+      --text-dim: #8b949e;
+      --yellow: #e3b341;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Syne', sans-serif;
+      padding: 20px;
+      background-image: radial-gradient(ellipse at 10% 20%, rgba(63,185,80,0.05) 0%, transparent 50%),
+                        radial-gradient(ellipse at 90% 80%, rgba(121,192,255,0.05) 0%, transparent 50%);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 640px;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* HEADER */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .logo {
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      color: var(--accent);
+      background: rgba(63,185,80,0.1);
+      border: 1px solid rgba(63,185,80,0.2);
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .title span { color: var(--accent3); }
+
+    /* PROGRESS */
+    .progress-bar {
+      height: 3px;
+      background: var(--surface2);
+      border-radius: 10px;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent3));
+      border-radius: 10px;
+      transition: width 0.4s ease;
+    }
+
+    .progress-text {
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+
+    /* CARD */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 16px;
+    }
+
+    .question-num {
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+
+    .question {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    .code-block {
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      color: var(--accent3);
+      margin-bottom: 20px;
+      line-height: 1.6;
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    /* OPTIONS */
+    .options { display: flex; flex-direction: column; gap: 10px; }
+
+    .option {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.15s;
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      text-align: left;
+    }
+
+    .option:hover:not(.disabled) {
+      border-color: var(--accent3);
+      background: rgba(121,192,255,0.05);
+    }
+
+    .option.correct {
+      border-color: var(--accent);
+      background: rgba(63,185,80,0.1);
+      color: var(--accent);
+    }
+
+    .option.wrong {
+      border-color: var(--accent2);
+      background: rgba(247,129,102,0.1);
+      color: var(--accent2);
+    }
+
+    .option.disabled { cursor: default; }
+
+    .opt-label {
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--text-dim);
+    }
+
+    .option.correct .opt-label { background: var(--accent); color: #0d1117; }
+    .option.wrong .opt-label { background: var(--accent2); color: #0d1117; }
+
+    /* EXPLANATION */
+    .explanation {
+      margin-top: 16px;
+      background: rgba(63,185,80,0.05);
+      border: 1px solid rgba(63,185,80,0.2);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.6;
+      display: none;
+    }
+
+    .explanation.show { display: block; }
+    .explanation strong { color: var(--accent); }
+
+    /* NEXT BTN */
+    .next-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      color: #0d1117;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      display: none;
+      margin-top: 16px;
+    }
+
+    .next-btn:hover { background: #3aa847; }
+    .next-btn:active { transform: scale(0.98); }
+    .next-btn.show { display: block; }
+
+    /* SCORE SCREEN */
+    .score-screen {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px 28px;
+      text-align: center;
+      display: none;
+    }
+
+    .score-screen.show { display: block; }
+
+    .score-emoji { font-size: 56px; margin-bottom: 16px; }
+
+    .score-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .score-num {
+      font-family: 'Fira Code', monospace;
+      font-size: 48px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .score-sub {
+      font-size: 14px;
+      color: var(--text-dim);
+      margin-bottom: 32px;
+    }
+
+    .restart-btn {
+      padding: 14px 32px;
+      background: var(--accent);
+      color: #0d1117;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .restart-btn:hover { background: #3aa847; }
+
+    /* START SCREEN */
+    .start-screen {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px 28px;
+      text-align: center;
+    }
+
+    .start-title {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .start-title span { color: var(--accent); }
+
+    .start-sub {
+      font-size: 15px;
+      color: var(--text-dim);
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .stat {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 20px;
+    }
+
+    .stat-num {
+      font-family: 'Fira Code', monospace;
+      font-size: 24px;
+      color: var(--accent3);
+      font-weight: 600;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    .start-btn {
+      padding: 14px 40px;
+      background: var(--accent);
+      color: #0d1117;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Syne', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .start-btn:hover { background: #3aa847; }
+    .start-btn:active { transform: scale(0.98); }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo">🐍 python</div>
+    <div class="title">Quiz <span>Challenge</span></div>
+  </div>
+
+  <!-- START SCREEN -->
+  <div class="start-screen" id="startScreen">
+    <div class="start-title">Python <span>Quiz</span></div>
+    <div class="start-sub">Test your Python knowledge with 10 questions covering basics, syntax, data structures, and more.</div>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num">10</div>
+        <div class="stat-label">Questions</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">~5</div>
+        <div class="stat-label">Minutes</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">4</div>
+        <div class="stat-label">Options</div>
+      </div>
+    </div>
+    <button class="start-btn" onclick="startQuiz()">Start Quiz →</button>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div id="quizScreen" style="display:none;">
+    <div class="progress-text" id="progressText">Question 1 of 10</div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:10%"></div></div>
+
+    <div class="card">
+      <div class="question-num" id="questionNum">Q1</div>
+      <div class="question" id="questionText"></div>
+      <div class="code-block" id="codeBlock" style="display:none;"></div>
+      <div class="options" id="options"></div>
+      <div class="explanation" id="explanation"></div>
+    </div>
+
+    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Next Question →</button>
+  </div>
+
+  <!-- SCORE SCREEN -->
+  <div class="score-screen" id="scoreScreen">
+    <div class="score-emoji" id="scoreEmoji">🎉</div>
+    <div class="score-title" id="scoreTitle">Well Done!</div>
+    <div class="score-num" id="scoreNum">8/10</div>
+    <div class="score-sub" id="scoreSub">Great job on the Python quiz!</div>
+    <button class="restart-btn" onclick="restartQuiz()">Try Again 🔄</button>
+  </div>
+</div>
+
+<script>
+const questions = [
+  {
+    q: "What is the output of the following code?",
+    code: `x = [1, 2, 3]\nprint(x[-1])`,
+    options: ["1", "3", "-1", "Error"],
+    answer: 1,
+    explanation: "<strong>x[-1]</strong> accesses the last element of the list. In Python, negative indexing starts from the end, so -1 gives the last element which is 3."
+  },
+  {
+    q: "Which of the following is used to define a function in Python?",
+    code: null,
+    options: ["function", "def", "fun", "define"],
+    answer: 1,
+    explanation: "<strong>def</strong> keyword is used to define a function in Python. Example: def my_function():"
+  },
+  {
+    q: "What data type is the result of: type(10 / 2)?",
+    code: null,
+    options: ["int", "float", "double", "number"],
+    answer: 1,
+    explanation: "In Python 3, the <strong>/</strong> operator always returns a <strong>float</strong>, even if the result is a whole number. So 10/2 = 5.0 (float)."
+  },
+  {
+    q: "What will this code print?",
+    code: `for i in range(3):\n    print(i)`,
+    options: ["1 2 3", "0 1 2 3", "0 1 2", "1 2"],
+    answer: 2,
+    explanation: "<strong>range(3)</strong> generates numbers from 0 to 2 (not including 3). So it prints 0, 1, 2."
+  },
+  {
+    q: "Which of these is a mutable data type in Python?",
+    code: null,
+    options: ["tuple", "string", "list", "int"],
+    answer: 2,
+    explanation: "<strong>list</strong> is mutable — you can change its elements after creation. Tuples and strings are immutable in Python."
+  },
+  {
+    q: "What is the correct way to create a dictionary in Python?",
+    code: null,
+    options: ["d = [1:'a', 2:'b']", "d = {1:'a', 2:'b'}", "d = (1:'a', 2:'b')", "d = <1:'a', 2:'b'>"],
+    answer: 1,
+    explanation: "Dictionaries are created using <strong>curly braces {}</strong> with key:value pairs. Example: d = {'name': 'Raj', 'age': 22}"
+  },
+  {
+    q: "What does len('Python') return?",
+    code: null,
+    options: ["5", "6", "7", "Error"],
+    answer: 1,
+    explanation: "<strong>len()</strong> returns the number of characters in a string. 'Python' has 6 characters: P-y-t-h-o-n."
+  },
+  {
+    q: "What is the output of this code?",
+    code: `a = 5\nb = 2\nprint(a ** b)`,
+    options: ["10", "7", "25", "2.5"],
+    answer: 2,
+    explanation: "The <strong>**</strong> operator is the exponentiation operator in Python. So 5 ** 2 = 5² = 25."
+  },
+  {
+    q: "Which keyword is used to handle exceptions in Python?",
+    code: null,
+    options: ["catch", "except", "error", "handle"],
+    answer: 1,
+    explanation: "Python uses <strong>try/except</strong> blocks to handle exceptions. Unlike Java/C++ which use try/catch."
+  },
+  {
+    q: "What will this code output?",
+    code: `x = 'hello'\nprint(x.upper())`,
+    options: ["hello", "Hello", "HELLO", "Error"],
+    answer: 2,
+    explanation: "<strong>.upper()</strong> is a string method that converts all characters to uppercase. So 'hello'.upper() returns 'HELLO'."
+  }
+];
+
+let current = 0;
+let score = 0;
+let answered = false;
+
+function startQuiz() {
+  document.getElementById('startScreen').style.display = 'none';
+  document.getElementById('quizScreen').style.display = 'block';
+  loadQuestion();
+}
+
+function loadQuestion() {
+  answered = false;
+  const q = questions[current];
+  const labels = ['A', 'B', 'C', 'D'];
+
+  document.getElementById('questionNum').textContent = `Q${current + 1}`;
+  document.getElementById('questionText').textContent = q.q;
+  document.getElementById('progressText').textContent = `Question ${current + 1} of ${questions.length}`;
+  document.getElementById('progressFill').style.width = `${((current + 1) / questions.length) * 100}%`;
+
+  const codeBlock = document.getElementById('codeBlock');
+  if (q.code) {
+    codeBlock.textContent = q.code;
+    codeBlock.style.display = 'block';
+  } else {
+    codeBlock.style.display = 'none';
+  }
+
+  const optionsEl = document.getElementById('options');
+  optionsEl.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.innerHTML = `<span class="opt-label">${labels[i]}</span>${opt}`;
+    btn.onclick = () => selectAnswer(i);
+    optionsEl.appendChild(btn);
+  });
+
+  document.getElementById('explanation').className = 'explanation';
+  document.getElementById('explanation').innerHTML = '';
+  document.getElementById('nextBtn').className = 'next-btn';
+}
+
+function selectAnswer(index) {
+  if (answered) return;
+  answered = true;
+
+  const q = questions[current];
+  const opts = document.querySelectorAll('.option');
+
+  opts.forEach(o => o.classList.add('disabled'));
+  opts[index].classList.add(index === q.answer ? 'correct' : 'wrong');
+  if (index !== q.answer) opts[q.answer].classList.add('correct');
+
+  if (index === q.answer) score++;
+
+  const expEl = document.getElementById('explanation');
+  expEl.innerHTML = q.explanation;
+  expEl.className = 'explanation show';
+
+  document.getElementById('nextBtn').className = 'next-btn show';
+  document.getElementById('nextBtn').textContent = current === questions.length - 1 ? 'See Results 🎯' : 'Next Question →';
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= questions.length) {
+    showScore();
+  } else {
+    loadQuestion();
+  }
+}
+
+function showScore() {
+  document.getElementById('quizScreen').style.display = 'none';
+  const scoreScreen = document.getElementById('scoreScreen');
+  scoreScreen.className = 'score-screen show';
+
+  const pct = (score / questions.length) * 100;
+  document.getElementById('scoreNum').textContent = `${score}/${questions.length}`;
+
+  let emoji, title, sub;
+  if (pct === 100) { emoji = '🏆'; title = 'Perfect Score!'; sub = 'Excellent! You know Python very well!'; }
+  else if (pct >= 70) { emoji = '🎉'; title = 'Great Job!'; sub = 'Good knowledge of Python. Keep practicing!'; }
+  else if (pct >= 40) { emoji = '💪'; title = 'Not Bad!'; sub = 'Keep learning Python — you are getting there!'; }
+  else { emoji = '📚'; title = 'Keep Practicing!'; sub = 'Review Python basics and try again!'; }
+
+  document.getElementById('scoreEmoji').textContent = emoji;
+  document.getElementById('scoreTitle').textContent = title;
+  document.getElementById('scoreSub').textContent = sub;
+}
+
+function restartQuiz() {
+  current = 0; score = 0; answered = false;
+  document.getElementById('scoreScreen').className = 'score-screen';
+  document.getElementById('quizScreen').style.display = 'block';
+  loadQuestion();
+}
+</script>
+</body>
+</html>
